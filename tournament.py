@@ -3,12 +3,16 @@
 # tournament.py -- implementation of a Swiss-system tournament
 #
 
+# Import library to interract with postgre sql.
 import psycopg2
+# Import library to inser clean values into DB.
 import bleach
 
 
 def connect(query):
     """Connect to the PostgreSQL database.  Returns a database connection."""
+
+    # Simple DB connection to refer to in further functions.
     db = psycopg2.connect("dbname=tournament")
     c = db.cursor()
     c.execute(query)
@@ -18,18 +22,21 @@ def connect(query):
 def deleteMatches():
     """Remove all the match records from the database."""
 
+    # Simple statement.
     query = "DELETE FROM scores;"
     connect(query)
 
 def deletePlayers():
     """Remove all the player records from the database."""
  
+    # Simple statement.
     query = "DELETE FROM players"
     connect(query)
 
 def countPlayers():
     """Returns the number of players currently registered."""
 
+    # Fetch resul from the DB and format in python to meet requirements.
     query = "SELECT count(*) FROM players;"
     db = psycopg2.connect("dbname=tournament")
     c = db.cursor()
@@ -48,6 +55,7 @@ def registerPlayer(name):
     Args:
       name: the player's full name (need not be unique).
     """
+    # I use bleach to make sure no bad values are inserted into DB.
     clean_name = bleach.clean(name)
     query = "INSERT INTO players(name) values(%s);"
     db = psycopg2.connect("dbname=tournament")
@@ -69,6 +77,7 @@ def playerStandings():
         wins: the number of matches the player has won
         matches: the number of matches the player has played
     """
+    # Joining two project tables and a newly created view table to get correct results.
     query = "SELECT players.player_id AS id, players.name, count(matches_won.wins) AS win, \
             SUM(CASE WHEN scores.match != 0 THEN 1 ELSE 0 END) AS matches \
             FROM players \
@@ -92,6 +101,7 @@ def reportMatch(winner, loser):
       winner:  the id number of the player who won
       loser:  the id number of the player who lost
     """
+    # Simply insert values into the corretct columns in scores table
     query = "INSERT INTO scores(winner_id, loser_id) VALUES(%s, %s);"
     db = psycopg2.connect("dbname=tournament")
     c = db.cursor()
@@ -114,6 +124,8 @@ def swissPairings():
         id2: the second player's unique id
         name2: the second player's name
     """
+
+    # Select player standings from the database.
     query = "SELECT id, name FROM standings;"
     db = psycopg2.connect("dbname=tournament")
     c = db.cursor()
@@ -121,6 +133,7 @@ def swissPairings():
     results = c.fetchall()
     db.close
     
+    # Reorganize to match requirements.
     pairs = []
     pair = []
     for result in results:

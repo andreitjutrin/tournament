@@ -37,6 +37,8 @@ create table scores
 	CHECK (winner_id != loser_id)
 );
 
+-- This view is required to accomplish playerStandings() challenge
+
 CREATE VIEW matches_won 
 	AS SELECT 	player_id, players.name AS name,
 				count(*) AS wins 
@@ -44,6 +46,7 @@ CREATE VIEW matches_won
 	WHERE 		players.player_id = scores.winner_id 
 	GROUP BY 	player_id;
 
+-- This view is required to accomplish swissPairings() challenge
 
 CREATE VIEW standings
 	AS SELECT 	players.player_id AS id, players.name, 
